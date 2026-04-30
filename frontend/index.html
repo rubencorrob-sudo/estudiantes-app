@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>App Estudiantes</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Correo">
+    <button onclick="sendOTP()">Enviar OTP</button>
+</div>
+
+<!-- OTP -->
+<div id="otp" style="display:none;">
+    <h2>Verificar OTP</h2>
+    <input id="otpInput" placeholder="Código">
+    <button onclick="verifyOTP()">Verificar</button>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+    <h2>Gestión de Estudiantes</h2>
+
+    <input id="nombre" placeholder="Nombre">
+    <input id="edad" type="number" placeholder="Edad">
+    <input id="nota" type="number" placeholder="Nota">
+    <button onclick="createStudent()">Guardar</button>
+
+    <ul id="list"></ul>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
