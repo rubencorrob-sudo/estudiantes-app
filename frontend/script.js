@@ -11,16 +11,26 @@ function sendOTP() {
         return;
     }
 
-    emailGlobal = email;
+    const btn = document.querySelector("button");
+    btn.innerText = "Enviando...";
+    btn.disabled = true;
 
     fetch(`${API}/auth/send-otp?email=${email}`, {
         method: "POST"
     })
+    .then(res => res.json())
     .then(() => {
+        btn.innerText = "Enviar OTP";
+        btn.disabled = false;
+
         document.getElementById("login").style.display = "none";
         document.getElementById("otp").style.display = "block";
     })
-    .catch(() => alert("Error enviando OTP"));
+    .catch(() => {
+        btn.innerText = "Enviar OTP";
+        btn.disabled = false;
+        alert("Error enviando OTP");
+    });
 }
 
 function verifyOTP() {
