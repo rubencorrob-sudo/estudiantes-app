@@ -41,7 +41,10 @@ def send_otp(email: str, db: Session = Depends(get_db)):
 
     print("OTP:", otp)
 
-    return {"message": "OTP generado"}
+    return {
+    "message": "OTP generado",
+    "otp": otp
+}
 
 @app.post("/auth/verify-otp")
 def verify_otp(email: str, otp: str, db: Session = Depends(get_db)):
