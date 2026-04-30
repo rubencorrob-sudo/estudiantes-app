@@ -5,6 +5,8 @@ import models
 from database import engine, SessionLocal
 import random
 
+otp_store = {}
+
 app = FastAPI()
 
 # 🔥 CORS
@@ -32,19 +34,10 @@ def get_db():
 # ============================
 
 @app.post("/auth/send-otp")
-def send_otp(email: str, db: Session = Depends(get_db)):
+def send_otp(email: str):
     otp = str(random.randint(100000, 999999))
 
-    user = db.query(models.User).filter(models.User.email == email).first()
-
-    if user:
-        user.otp = otp
-    else:
-        user = models.User(email=email, otp=otp)
-        db.add(user)
-
-    db.commit()
-    db.refresh(user)  # 🔥 IMPORTANTE
+    otp_store[email] = otp  # 🔥 guardar en memoria
 
     print("OTP generado:", otp)
 
@@ -55,24 +48,18 @@ def send_otp(email: str, db: Session = Depends(get_db)):
 
 
 @app.post("/auth/verify-otp")
-def verify_otp(email: str, otp: str, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == email).first()
+def verify_otp(email: str, otp: str):
 
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
-
-    # 🔥 DEBUG REAL
     print("====== DEBUG OTP ======")
     print("EMAIL:", email)
-    print("OTP GUARDADO DB:", user.otp)
+    print("OTP GUARDADO:", otp_store.get(email))
     print("OTP RECIBIDO:", otp)
     print("=======================")
 
-    # 🔥 LIMPIAR ESPACIOS
-    otp = otp.strip()
+    if email not in otp_store:
+        raise HTTPException(status_code=400, detail="No se ha generado OTP")
 
-    # 🔥 COMPARACIÓN SEGURA
-    if str(user.otp).strip() != str(otp):
+    if otp_store[email] != otp:
         raise HTTPException(status_code=400, detail="OTP incorrecto")
 
     return {"message": "Login exitoso"}
