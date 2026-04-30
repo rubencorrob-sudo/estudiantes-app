@@ -5,8 +5,7 @@ import models
 import random
 from fastapi.middleware.cors import CORSMiddleware
 
-models.Base.metadata.create_all(bind=engine)
-
+models.Base.metadata.create_all(bind=engine, checkfirst=True)
 app = FastAPI()
 
 app.add_middleware(
