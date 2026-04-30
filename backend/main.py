@@ -33,7 +33,7 @@ def get_db():
 
 @app.post("/auth/send-otp")
 def send_otp(email: str, db: Session = Depends(get_db)):
-    otp = str(random.randint(100000, 999999))  # 🔥 SIEMPRE STRING
+    otp = str(random.randint(100000, 999999))
 
     user = db.query(models.User).filter(models.User.email == email).first()
 
@@ -44,10 +44,10 @@ def send_otp(email: str, db: Session = Depends(get_db)):
         db.add(user)
 
     db.commit()
+    db.refresh(user)  # 🔥 IMPORTANTE
 
     print("OTP generado:", otp)
 
-    # 🔥 DEVOLVER OTP PARA DEMO
     return {
         "message": "OTP generado",
         "otp": otp
@@ -61,15 +61,21 @@ def verify_otp(email: str, otp: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    print("OTP guardado:", user.otp)
-    print("OTP recibido:", otp)
+    # 🔥 DEBUG REAL
+    print("====== DEBUG OTP ======")
+    print("EMAIL:", email)
+    print("OTP GUARDADO DB:", user.otp)
+    print("OTP RECIBIDO:", otp)
+    print("=======================")
 
-    # 🔥 COMPARACIÓN CORRECTA
-    if str(user.otp) != str(otp):
+    # 🔥 LIMPIAR ESPACIOS
+    otp = otp.strip()
+
+    # 🔥 COMPARACIÓN SEGURA
+    if str(user.otp).strip() != str(otp):
         raise HTTPException(status_code=400, detail="OTP incorrecto")
 
     return {"message": "Login exitoso"}
-
 
 # ============================
 # 📚 STUDENTS

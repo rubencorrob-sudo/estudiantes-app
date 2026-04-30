@@ -6,30 +6,39 @@ let emailGlobal = "";
 function sendOTP() {
     const email = document.getElementById("email").value;
 
-    console.log("📧 Email:", email);
+    if (!email) {
+        alert("Ingresa un correo");
+        return;
+    }
+
+    // 🔥 BOTÓN
+    const btn = document.querySelector("#login button");
+    btn.innerText = "Enviando...";
+    btn.disabled = true;
 
     fetch(`${API}/auth/send-otp?email=${email}`, {
         method: "POST"
     })
-    .then(res => {
-        console.log("🔵 Response status:", res.status);
-        return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
-        console.log("🟢 DATA:", data);
+        console.log("OTP:", data.otp);
 
-        if (!data.otp) {
-            alert("No llegó el OTP");
-            return;
-        }
+        alert("Tu OTP es: " + data.otp);
 
-        alert("OTP: " + data.otp);
+        // 🔥 RESTAURAR BOTÓN
+        btn.innerText = "Enviar OTP";
+        btn.disabled = false;
 
+        // 🔥 CAMBIO DE PANTALLA
         document.getElementById("login").style.display = "none";
         document.getElementById("otp").style.display = "block";
     })
     .catch(err => {
-        console.error("🔴 ERROR:", err);
+        console.error(err);
+
+        btn.innerText = "Enviar OTP";
+        btn.disabled = false;
+
         alert("Error enviando OTP");
     });
 }
