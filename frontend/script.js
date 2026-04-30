@@ -18,15 +18,21 @@ function sendOTP() {
     fetch(`${API}/auth/send-otp?email=${email}`, {
         method: "POST"
     })
-    .then(res => res.json())
-    .then(() => {
+    .then(res => res.json()) // 👈 ESTO ES CLAVE
+    .then(data => {
+        console.log("Respuesta:", data);
+
+        // 🔥 MOSTRAR OTP
+        alert("Tu OTP es: " + data.otp);
+
         btn.innerText = "Enviar OTP";
         btn.disabled = false;
 
         document.getElementById("login").style.display = "none";
         document.getElementById("otp").style.display = "block";
     })
-    .catch(() => {
+    .catch(err => {
+        console.error(err);
         btn.innerText = "Enviar OTP";
         btn.disabled = false;
         alert("Error enviando OTP");
