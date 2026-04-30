@@ -1,4 +1,4 @@
-const API = "https://estudiantes-api.onrender.com";
+const API = "https://estudiantes-api2.onrender.comm";
 let emailGlobal = "";
 
 // ---------- AUTH ----------
