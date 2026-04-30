@@ -41,7 +41,9 @@ function verifyOTP() {
         method: "POST"
     })
     .then(res => {
-        if (!res.ok) throw new Error();
+        if (!res.ok) throw new Error("OTP incorrecto");
+
+        alert("Login exitoso");
 
         document.getElementById("otp").style.display = "none";
         document.getElementById("app").style.display = "block";
