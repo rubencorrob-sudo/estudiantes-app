@@ -1,57 +1,81 @@
 const API = "https://estudiantes-api2.onrender.com";
+
+// 🔥 VARIABLE GLOBAL PARA GUARDAR EL EMAIL
 let emailGlobal = "";
 
-// ---------- AUTH ----------
+// ==========================
+// 🔐 AUTH
+// ==========================
 
 function sendOTP() {
-    const email = document.getElementById("email").value;
+    const emailInput = document.getElementById("email");
+    const email = emailInput.value.trim();
 
     if (!email) {
         alert("Ingresa un correo");
         return;
     }
 
-    // 🔥 BOTÓN
+    // 🔥 GUARDAR EMAIL GLOBAL (CLAVE)
+    emailGlobal = email;
+
+    // 🔥 BOTÓN (evita doble click)
     const btn = document.querySelector("#login button");
     btn.innerText = "Enviando...";
     btn.disabled = true;
 
-    fetch(`${API}/auth/send-otp?email=${email}`, {
+    fetch(`${API}/auth/send-otp?email=${encodeURIComponent(email)}`, {
         method: "POST"
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) throw new Error("Error en send-otp");
+        return res.json();
+    })
     .then(data => {
-        console.log("OTP:", data.otp);
+        console.log("OTP recibido:", data);
 
+        // 🔥 MOSTRAR OTP (para demo)
         alert("Tu OTP es: " + data.otp);
 
-        // 🔥 RESTAURAR BOTÓN
-        btn.innerText = "Enviar OTP";
-        btn.disabled = false;
-
-        // 🔥 CAMBIO DE PANTALLA
+        // 🔥 CAMBIAR PANTALLA
         document.getElementById("login").style.display = "none";
         document.getElementById("otp").style.display = "block";
     })
     .catch(err => {
-        console.error(err);
-
+        console.error("ERROR sendOTP:", err);
+        alert("Error enviando OTP");
+    })
+    .finally(() => {
         btn.innerText = "Enviar OTP";
         btn.disabled = false;
-
-        alert("Error enviando OTP");
     });
 }
 
-function verifyOTP() {
-    const otp = document.getElementById("otpInput").value;
 
-    fetch(`${API}/auth/verify-otp?email=${emailGlobal}&otp=${otp}`, {
+function verifyOTP() {
+    const otpInput = document.getElementById("otpInput");
+    const otp = otpInput.value.trim();
+
+    if (!otp) {
+        alert("Ingresa el OTP");
+        return;
+    }
+
+    if (!emailGlobal) {
+        alert("Error: no hay email guardado");
+        return;
+    }
+
+    console.log("Verificando con:", emailGlobal, otp);
+
+    fetch(`${API}/auth/verify-otp?email=${encodeURIComponent(emailGlobal)}&otp=${encodeURIComponent(otp)}`, {
         method: "POST"
     })
     .then(res => {
         if (!res.ok) throw new Error("OTP incorrecto");
-
+        return res.json();
+    })
+    .then(() => {
         alert("Login exitoso");
 
         document.getElementById("otp").style.display = "none";
@@ -59,10 +83,16 @@ function verifyOTP() {
 
         loadStudents();
     })
-    .catch(() => alert("OTP incorrecto"));
+    .catch(err => {
+        console.error("ERROR verifyOTP:", err);
+        alert("OTP incorrecto");
+    });
 }
 
-// ---------- STUDENTS ----------
+
+// ==========================
+// 📚 STUDENTS
+// ==========================
 
 function loadStudents() {
     fetch(`${API}/students`)
@@ -70,11 +100,6 @@ function loadStudents() {
         .then(data => {
             const list = document.getElementById("list");
             list.innerHTML = "";
-            li.innerHTML = `
-    ${s.nombre} - ${s.edad} - ${s.nota}
-    <button onclick='editStudent(${JSON.stringify(s)})'>Editar</button>
-    <button onclick="deleteStudent(${s.id})">Eliminar</button>
-`;
 
             data.forEach(s => {
                 const li = document.createElement("li");
@@ -87,60 +112,27 @@ function loadStudents() {
         });
 }
 
+
 function createStudent() {
-    const nombre = document.getElementById("nombre").value;
-    const edad = document.getElementById("edad").value;
-    const nota = document.getElementById("nota").value;
+    const nombre = document.getElementById("nombre").value.trim();
+    const edad = document.getElementById("edad").value.trim();
+    const nota = document.getElementById("nota").value.trim();
 
     if (!nombre || !edad || !nota) {
         alert("Completa todos los campos");
         return;
     }
 
-    fetch(`${API}/students?nombre=${nombre}&edad=${edad}&nota=${nota}`, {
+    fetch(`${API}/students?nombre=${encodeURIComponent(nombre)}&edad=${edad}&nota=${nota}`, {
         method: "POST"
     })
-    .then(() => {
-        loadStudents();
-    });
+    .then(() => loadStudents());
 }
+
 
 function deleteStudent(id) {
     fetch(`${API}/students/${id}`, {
         method: "DELETE"
     })
     .then(() => loadStudents());
-}
-
-let editingId = null;
-
-function createStudent() {
-    const nombre = document.getElementById("nombre").value;
-    const edad = document.getElementById("edad").value;
-    const nota = document.getElementById("nota").value;
-
-    if (!nombre || !edad || !nota) {
-        alert("Completa todos los campos");
-        return;
-    }
-
-    if (editingId) {
-        fetch(`${API}/students/${editingId}?nombre=${nombre}&edad=${edad}&nota=${nota}`, {
-            method: "PUT"
-        }).then(() => {
-            editingId = null;
-            loadStudents();
-        });
-    } else {
-        fetch(`${API}/students?nombre=${nombre}&edad=${edad}&nota=${nota}`, {
-            method: "POST"
-        }).then(loadStudents);
-    }
-}
-
-function editStudent(student) {
-    document.getElementById("nombre").value = student.nombre;
-    document.getElementById("edad").value = student.edad;
-    document.getElementById("nota").value = student.nota;
-    editingId = student.id;
 }
